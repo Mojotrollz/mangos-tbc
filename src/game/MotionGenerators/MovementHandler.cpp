@@ -112,6 +112,18 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
     GetPlayer()->SetMap(pMap);
     GetPlayer()->Relocate(loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation);
+    if (GetPlayer()->m_teleportTransport)
+    {
+        if (GenericTransport* transport = pMap->GetTransport(GetPlayer()->m_teleportTransport))
+        {
+            if (transport->GetMapId() == loc.mapid)
+            {
+                transport->AddPassenger(GetPlayer());
+                transport->UpdatePassengerPosition(GetPlayer());
+            }
+        }
+    }
+    GetPlayer()->m_teleportTransport = ObjectGuid();
 
     GetPlayer()->SendInitialPacketsBeforeAddToMap();
     // the CanEnter checks are done in TeleporTo but conditions may change
@@ -220,8 +232,16 @@ void WorldSession::HandleMoveTeleportAckOpcode(WorldPacket& recv_data)
     WorldLocation const& dest = plMover->GetTeleportDest();
 
     plMover->SetDelayedZoneUpdate(false, 0);
+
     plMover->SetPosition(dest.coord_x, dest.coord_y, dest.coord_z, dest.orientation, true);
     plMover->ToCPlayer()->HandleTeleport(plMover->GetMapId(), dest.coord_x, dest.coord_y, dest.coord_z, dest.orientation);
+
+    GenericTransport* currentTransport = nullptr;
+    if (plMover->m_teleportTransport)
+        currentTransport = plMover->GetMap()->GetTransport(plMover->m_teleportTransport);
+    if (currentTransport)
+        currentTransport->AddPassenger(plMover);
+    plMover->m_teleportTransport = ObjectGuid();
 
     uint32 newzone, newarea;
     plMover->GetZoneAndAreaId(newzone, newarea);
@@ -443,9 +463,10 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recv_data)
     WorldPacket data(MSG_MOVE_KNOCK_BACK, recv_data.size() + 15);
     data << mover->GetObjectGuid();
     data << movementInfo;
-    data << movementInfo->GetJumpInfo().cosAngle;
-    data << movementInfo->GetJumpInfo().sinAngle;
-    data << movementInfo->GetJumpInfo().velocity;
+    data << movementInfo->jump.cosAngle;
+    data << movementInfo->jump.sinAngle;
+    data << movementInfo->jump.xyspeed;
+    data << movementInfo->jump.velocity;
     mover->SendMessageToSetExcept(data, _player);
 }
 
@@ -547,13 +568,8 @@ void WorldSession::HandleMoverRelocation(const MovementInfoPtr& movementInfo)
         if (movementInfo->HasMovementFlag(MOVEFLAG_ONTRANSPORT))
         {
             if (!plMover->m_transport)
-            {
                 if (GenericTransport* transport = plMover->GetMap()->GetTransport(movementInfo.GetTransportGuid()))
-                {
-                    plMover->m_transport = transport;
                     transport->AddPassenger(plMover);
-                }
-            }
         }
         else if (plMover->m_transport)               // if we were on a transport, leave
         {
@@ -614,7 +630,8 @@ void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recv_data)
     if (mover == nullptr || guid != mover->GetObjectGuid())
         return;
 
-    mover->m_movementInfo->UpdateTime(mover->m_movementInfo->GetTime() + timeSkipped);
+    mover->m_movementInfo->stime += timeSkipped;
+    mover->m_movementInfo->ctime += timeSkipped;
 
     // Send to other players
     WorldPacket data(MSG_MOVE_TIME_SKIPPED, 16);
