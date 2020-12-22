@@ -565,7 +565,8 @@ void WorldSession::HandleMoverRelocation(const MovementInfoPtr& movementInfo)
 
     if (Player* plMover = mover->GetTypeId() == TYPEID_PLAYER ? (Player*)mover : nullptr)
     {
-        if (movementInfo->HasMovementFlag(MOVEFLAG_ONTRANSPORT))
+        plMover->m_movementInfo = movementInfo;
+        if (plMover->m_movementInfo->HasMovementFlag(MOVEFLAG_ONTRANSPORT))
         {
             if (!plMover->m_transport)
                 if (GenericTransport* transport = plMover->GetMap()->GetTransport(movementInfo.GetTransportGuid()))
@@ -575,10 +576,9 @@ void WorldSession::HandleMoverRelocation(const MovementInfoPtr& movementInfo)
         {
             plMover->m_transport->RemovePassenger(plMover);
             plMover->m_transport = nullptr;
-            movementInfo->ClearTransportData();
+            plMover->m_movementInfo->ClearTransportData();
         }
 
-        plMover->m_movementInfo = movementInfo;
         plMover->SetPosition(movementInfo->GetPos()->x, movementInfo->GetPos()->y, movementInfo->GetPos()->z, movementInfo->GetPos()->o);
 
         if (movementInfo->GetPos()->z < -500.0f)
