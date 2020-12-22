@@ -666,7 +666,7 @@ void Unit::SendHeartBeat()
 {
     WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
     data << GetPackGUID();
-    data << m_movementInfo;
+    data << *m_movementInfo;
     SendMessageToSet(data, true);
 }
 
@@ -10158,7 +10158,7 @@ void Unit::InterruptMoving(bool forceSendStop /*=false*/)
         Position pos(computedLoc.x, computedLoc.y, computedLoc.z, computedLoc.orientation);
         if (GenericTransport* transport = GetTransport())
         {
-            m_movementInfo.UpdateTransportData(pos);
+            m_movementInfo->UpdateTransportData(pos);
             transport->CalculatePassengerPosition(pos.x, pos.y, pos.z, &pos.o);
         }
 
@@ -10866,13 +10866,13 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
 
 void Unit::SendTeleportPacket(float x, float y, float z, float ori, GenericTransport* transport)
 {
-    MovementInfo teleportMovementInfo = m_movementInfo;
+    MovementInfo teleportMovementInfo = *m_movementInfo;
     if (transport)
     {
-        teleportMovementInfo->SetTransportData(transport->GetObjectGuid(), x, y, z, ori, transport->GetPathProgress());
+        teleportMovementInfo.SetTransportData(transport->GetObjectGuid(), x, y, z, ori, transport->GetPathProgress());
         transport->CalculatePassengerPosition(x, y, z, &ori); // recalculate to real coords
     }
-    teleportMovementInfo->ChangePosition(x, y, z, ori);
+    teleportMovementInfo.ChangePosition(x, y, z, ori);
 
     Player* player = nullptr;
 
@@ -10889,7 +10889,7 @@ void Unit::SendTeleportPacket(float x, float y, float z, float ori, GenericTrans
 
     WorldPacket moveUpdateTeleport(MSG_MOVE_TELEPORT, 38);
     moveUpdateTeleport << GetPackGUID();
-    teleportMovementInfo->Write(moveUpdateTeleport);
+    teleportMovementInfo.Write(moveUpdateTeleport);
     SendMessageToSetExcept(moveUpdateTeleport, player);
 }
 
@@ -11283,7 +11283,7 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
         Position pos(computedLoc.x, computedLoc.y, computedLoc.z, computedLoc.orientation);
         if (GenericTransport* transport = GetTransport())
         {
-            m_movementInfo.UpdateTransportData(pos);
+            m_movementInfo->UpdateTransportData(pos);
             transport->CalculatePassengerPosition(pos.x, pos.y, pos.z, &pos.o);
         }
 
@@ -11311,7 +11311,7 @@ void Unit::UpdateSplinePosition()
     Position pos(computedLoc.x, computedLoc.y, computedLoc.z, computedLoc.orientation);
     if (GenericTransport* transport = GetTransport())
     {
-        m_movementInfo.UpdateTransportData(pos);
+        m_movementInfo->UpdateTransportData(pos);
         transport->CalculatePassengerPosition(pos.x, pos.y, pos.z, &pos.o);
     }
     if (GenericTransport* transport = GetTransport())

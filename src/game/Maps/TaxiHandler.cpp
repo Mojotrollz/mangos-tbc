@@ -184,7 +184,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
 
     MovementInfoPtr movementInfo = MovementInfoPtr(new MovementInfo()); // used only for proper packet read
 
-    recv_data >> movementInfo;
+    recv_data >> *movementInfo;
     recv_data >> Unused<uint32>();                          // unk
 }
 

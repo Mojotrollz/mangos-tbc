@@ -283,7 +283,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recv_data)
 
     /* extract packet */
     MovementInfoPtr movementInfo = MovementInfoPtr(new MovementInfo());
-    recv_data >> movementInfo;
+    recv_data >> *movementInfo;
     /*----------------*/
 
     if (!VerifyMovementInfo(movementInfo))
@@ -324,7 +324,7 @@ void WorldSession::HandleForceSpeedChangeAckOpcodes(WorldPacket& recv_data)
 
     recv_data >> guid;
     recv_data >> Unused<uint32>();                          // counter or moveEvent
-    recv_data >> movementInfo;
+    recv_data >> *movementInfo;
     recv_data >> newspeed;
 
     // now can skip not our packet
@@ -405,7 +405,7 @@ void WorldSession::HandleMoveNotActiveMoverOpcode(WorldPacket& recv_data)
     MovementInfoPtr mi = MovementInfoPtr(new MovementInfo());
 
     recv_data >> old_mover_guid;
-    recv_data >> mi;
+    recv_data >> *mi;
 
     if (_player->IsClientControlled() && _player->GetMover() && _player->GetMover()->GetObjectGuid() == old_mover_guid)
     {
@@ -450,7 +450,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recv_data)
 
     recv_data >> guid;
     recv_data >> Unused<uint32>();                          // knockback packets counter
-    recv_data >> movementInfo;
+    recv_data >> *movementInfo;
 
     if (!VerifyMovementInfo(movementInfo, guid))
         return;
@@ -462,7 +462,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recv_data)
 
     WorldPacket data(MSG_MOVE_KNOCK_BACK, recv_data.size() + 15);
     data << mover->GetObjectGuid();
-    data << movementInfo;
+    data << *movementInfo;
     data << movementInfo->jump.cosAngle;
     data << movementInfo->jump.sinAngle;
     data << movementInfo->jump.xyspeed;
@@ -493,7 +493,7 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recv_data)
 
     recv_data >> Unused<uint64>();                          // guid
     recv_data >> Unused<uint32>();                          // unk
-    recv_data >> movementInfo;
+    recv_data >> *movementInfo;
     recv_data >> Unused<uint32>();                          // unk2
 
     GetPlayer()->ToCPlayer()->HandleAntiCheat(movementInfo, CMSG_MOVE_HOVER_ACK);
@@ -507,7 +507,7 @@ void WorldSession::HandleMoveWaterWalkAck(WorldPacket& recv_data)
 
     recv_data.read_skip<uint64>();                          // guid
     recv_data.read_skip<uint32>();                          // unk
-    recv_data >> movementInfo;
+    recv_data >> *movementInfo;
     recv_data >> Unused<uint32>();                          // unk2
 
     GetPlayer()->ToCPlayer()->HandleAntiCheat(movementInfo, CMSG_MOVE_WATER_WALK_ACK);
@@ -569,7 +569,7 @@ void WorldSession::HandleMoverRelocation(const MovementInfoPtr& movementInfo)
         if (plMover->m_movementInfo->HasMovementFlag(MOVEFLAG_ONTRANSPORT))
         {
             if (!plMover->m_transport)
-                if (GenericTransport* transport = plMover->GetMap()->GetTransport(movementInfo.GetTransportGuid()))
+                if (GenericTransport* transport = plMover->GetMap()->GetTransport(movementInfo->GetTransportGuid()))
                     transport->AddPassenger(plMover);
         }
         else if (plMover->m_transport)               // if we were on a transport, leave

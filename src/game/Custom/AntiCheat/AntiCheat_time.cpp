@@ -18,29 +18,29 @@ bool AntiCheat_time::HandleMovement(const MovementInfoPtr& MoveInfo, Opcodes opc
 
     if (!Initialized())
     {
-        calculatedServerTime = MoveInfo->GetTime();
+        calculatedServerTime = MoveInfo->stime;
         return SetOldMoveInfo(false);
     }
 
     if (GetDiff() < 500)
         return false;
 
-    int diff = MoveInfo->GetTime() - calculatedServerTime;
+    int diff = MoveInfo->ctime - calculatedServerTime;
 
     if (std::abs(diff) > 1000 + m_Player->GetSession()->GetLatency())
     {
-        m_Player->TeleportToPos(oldMapID, oldmoveInfo->GetPos(), TELE_TO_NOT_LEAVE_COMBAT);
+        m_Player->TeleportToPos(oldMapID, &oldmoveInfo->GetPos(), TELE_TO_NOT_LEAVE_COMBAT);
 
         if (m_Player->GetSession()->GetSecurity() > SEC_PLAYER)
         {
             m_Player->BoxChat << "TIMECHEAT" << "\n";
-            m_Player->BoxChat << "ClientTime: " << MoveInfo->GetTime() << "\n";
+            m_Player->BoxChat << "ClientTime: " << MoveInfo->ctime << "\n";
             m_Player->BoxChat << "ServerTime: " << WorldTimer::getMSTime() << "\n";
             m_Player->BoxChat << "Offset: " << diff << "\n";
         }
 
         // Reset time offset when cheat is detected
-        calculatedServerTime = MoveInfo->GetTime();
+        calculatedServerTime = MoveInfo->stime;
     }
 
     return SetOldMoveInfo(false);

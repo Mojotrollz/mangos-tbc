@@ -1493,7 +1493,7 @@ void WorldSession::HandleMoveSetCanFlyAckOpcode(WorldPacket& recv_data)
 
     recv_data >> Unused<uint64>();                          // guid
     recv_data >> Unused<uint32>();                          // unk
-    recv_data >> movementInfo;
+    recv_data >> *movementInfo;
     recv_data >> Unused<uint32>();                          // unk2
 
     _player->m_movementInfo->SetMovementFlags(movementInfo->GetMovementFlags());

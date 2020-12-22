@@ -33,7 +33,7 @@ bool AntiCheat_wallclimb::HandleMovement(const MovementInfoPtr& MoveInfo, Opcode
 
     if (triggeredcheats.none() && angle > 50.f)
     {
-		m_Player->TeleportToPos(storedMapID, storedmoveInfo->GetPos(), TELE_TO_NOT_LEAVE_COMBAT);
+		m_Player->TeleportToPos(storedMapID, &storedmoveInfo->GetPos(), TELE_TO_NOT_LEAVE_COMBAT);
 
         if (m_Player->GetSession()->GetSecurity() > SEC_PLAYER)
             m_Player->BoxChat << "Wallclimbing angle: " << angle << "\n";

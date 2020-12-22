@@ -26,7 +26,7 @@ bool AntiCheat_walljump::HandleMovement(const MovementInfoPtr& MoveInfo, Opcodes
         {
             if (triggeredcheats.none() && !isFlying() && !isSwimming() && AboveAngleCount)
             {
-				m_Player->TeleportToPos(storedMapID, storedmoveInfo->GetPos(), TELE_TO_NOT_LEAVE_COMBAT);
+				m_Player->TeleportToPos(storedMapID, &storedmoveInfo->GetPos(), TELE_TO_NOT_LEAVE_COMBAT);
 
                 if (m_Player->GetSession()->GetSecurity() > SEC_PLAYER)
                     m_Player->BoxChat << "Jumpclimbing angle: " << angle << "\n";
@@ -53,7 +53,7 @@ bool AntiCheat_walljump::HandleMovement(const MovementInfoPtr& MoveInfo, Opcodes
         return SetOldMoveInfo(triggeredcheats.any());
     }
 
-    if (storedmoveInfo->GetPos()->z > newmoveInfo->GetPos()->z)
+    if (storedmoveInfo->GetPos().z > newmoveInfo->GetPos().z)
         AboveAngleCount = 0;
 
     return triggeredcheats.any();

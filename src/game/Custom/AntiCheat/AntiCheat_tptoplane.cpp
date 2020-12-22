@@ -13,8 +13,8 @@ bool AntiCheat_tptoplane::HandleMovement(const MovementInfoPtr& MoveInfo, Opcode
     if (!Initialized())
         return SetOldMoveInfo(false);
 
-    const Position* pn = newmoveInfo->GetPos();
-    const Position* po = oldmoveInfo->GetPos();
+    const Position* pn = &newmoveInfo->GetPos();
+    const Position* po = &oldmoveInfo->GetPos();
 
     if (!m_Player->IsAlive())
         return SetOldMoveInfo(false);

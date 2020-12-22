@@ -1995,9 +1995,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             currentTransport = GetMap()->GetTransport(m_teleportTransport);
         if (currentTransport)
         {
-            m_movementInfo.AddMovementFlag(MOVEFLAG_ONTRANSPORT);
-            m_movementInfo.t_guid = GetObjectGuid();
-            m_movementInfo.t_time = currentTransport->GetPathProgress();
+            m_movementInfo->AddMovementFlag(MOVEFLAG_ONTRANSPORT);
+            m_movementInfo->t_guid = GetObjectGuid();
+            m_movementInfo->t_time = currentTransport->GetPathProgress();
 
             if (!HaveAtClient(currentTransport)) // in sniff, this aggregates all surroundings and sends them at once
             {
@@ -21168,7 +21168,7 @@ void Player::LearnTalent(uint32 talentId, uint32 talentRank)
     DETAIL_LOG("TalentID: %u Rank: %u Spell: %u\n", talentId, talentRank, spellid);
 }
 
-void Player::UpdateFallInformationIfNeed(MovementInfo cost& minfo, uint16 opcode)
+void Player::UpdateFallInformationIfNeed(MovementInfoPtr const& minfo, uint16 opcode)
 {
     if (m_lastFallTime >= minfo->GetFallTime() || m_lastFallZ <= minfo->GetPos().z || minfo->HasMovementFlag(MOVEFLAG_FLYING2) || opcode == MSG_MOVE_FALL_LAND)
         SetFallInformation(minfo->GetFallTime(), minfo->GetPos().z);
